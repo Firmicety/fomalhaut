@@ -12,10 +12,10 @@ BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 # 日志所在目录
 LOG_PATH = os.path.join(BASE_PATH, 'logs')
 
-HOST = '127.0.0.1'
-PORT = 6500
+HOST = '0.0.0.0'
+PORT = 5000
 # 是否调试模式
-DEBUG = True
+DEBUG = False
 # 代码修改时, 是否自动重启
 AUTO_RELOAD = True if DEBUG else False
 
@@ -68,7 +68,7 @@ LOGGING_HANDLERS = ['console'] if DEBUG else ['file']
 DEFAULT_TIMEZONE = 'Asia/Shanghai'
 
 # 访问签名的有效时间，秒
-SIGNATURE_EXPIRE_SECONDS = 600
+SIGNATURE_EXPIRE_SECONDS = 60
 
 # default zh-Hans
 LANGUAGE = 'zh-Hans'
@@ -78,7 +78,7 @@ LANGUAGE = 'zh-Hans'
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB = 0
-REDIS_PASSWORD = 'secret'
+REDIS_PASSWORD = 123456
 
 # client 配置 redis 中 key 前缀
 CLIENT_CONFIG_REDIS_PREFIX = 'config'

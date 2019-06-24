@@ -4,7 +4,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
-import sys
+import sys,os
 import signal
 import tornado
 import time
@@ -19,7 +19,7 @@ from fomalhaut.utils import RedisHelper, import_string, text_type, PYPY
 
 logger = logging.getLogger(__name__)
 
-MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 1
+MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 4
 
 define("host", default=settings.HOST, help="run on the given host", type=str)
 define("port", default=settings.PORT, help="run on the given port", type=int)
@@ -100,18 +100,21 @@ def shutdown():
     logger.info('will shutdown in %s seconds...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
     io_loop = tornado.ioloop.IOLoop.instance()
 
-    deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
-
+    
+    #deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
+    io_loop.stop()
+    logger.info('shutdown')
+    '''
     def stop_loop():
         now = time.time()
-        if now < deadline and (io_loop._callbacks or io_loop._timeouts):
+        if now < deadline and (io_loop.callback or io_loop._timeouts):
             io_loop.add_timeout(now + 1, stop_loop)
         else:
             io_loop.stop()
             logger.info('shutdown')
 
     stop_loop()
-
+    '''
 
 def main():
     # 重新设置一下日志级别，默认情况下，tornado 是 info
@@ -123,11 +126,12 @@ def main():
     # 如果是在 gitlab-ci 环境下运行，redis 的主机需要设置为 redis，同时没有密码
     if options.gitlab_ci is not None:
         settings.REDIS_HOST = 'redis'
-        settings.REDIS_PASSWORD = None
+        settings.REDIS_PASSWORD = 123456
 
     # 启动 tornado 之前，先测试 redis 是否能正常工作
     RedisHelper.ping_redis()
 
+    import pdb; pdb.set_trace()
     global server
     app = Application()
     server = httpserver.HTTPServer(app, xheaders=True)
@@ -137,22 +141,9 @@ def main():
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGINT, sig_handler)
 
-    if sys.version_info >= (3, 5) and not PYPY:
-        # python 3.5 以上版本，可以使用 uvloop 来加速
-        # https://github.com/MagicStack/uvloop/issues/35
-        from tornado.platform.asyncio import AsyncIOMainLoop
-        import asyncio
-        try:
-            import uvloop
-            logger.info('use uvloop as ioloop')
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            AsyncIOMainLoop().install()
-            asyncio.get_event_loop().run_forever()
-        except:
-            ioloop.IOLoop.instance().start()
-    else:
-        ioloop.IOLoop.instance().start()
+    logger.info('pid==%d'%os.getpid())
 
+    ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
     main()

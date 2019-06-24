@@ -25,7 +25,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from future.builtins import chr
 from future.utils import iteritems
-from tornado.escape import json_decode, utf8, to_unicode, basestring_type
+from tornado.escape import json_decode, utf8, to_unicode
+from tornado.util import basestring_type
 from tornado.httpclient import AsyncHTTPClient
 
 from fomalhaut import settings
@@ -450,6 +451,7 @@ class RedisHelper(object):
         # http://stackoverflow.com/questions/5953786/how-do-you-properly-query-redis-from-tornado/15596969#15596969
         # 注意这里必须是 settings.REDIS_HOST
         # 否则在 runserver 中若修改了 settings.REDIS_HOST，这里就不能生效
+        import pdb; pdb.set_trace()
         RedisHelper._client = redis.StrictRedis(
             host=settings.REDIS_HOST, port=settings.REDIS_PORT,
             db=settings.REDIS_DB, password=settings.REDIS_PASSWORD)
